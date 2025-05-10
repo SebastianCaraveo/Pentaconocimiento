@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Moderador</title>
+</head>
+<body>
+  <h1>Panel del Moderador</h1>
+  <button onclick="cargarPreguntas()">Cargar Preguntas</button>
+  <div id="preguntas"></div>
+  <h3>Control</h3>
+  <button onclick="asignarRespuesta('equipo1', true)">Equipo 1 Correcto</button>
+  <button onclick="asignarRespuesta('equipo1', false)">Equipo 1 Incorrecto</button>
+  <button onclick="asignarRespuesta('equipo2', true)">Equipo 2 Correcto</button>
+  <button onclick="asignarRespuesta('equipo2', false)">Equipo 2 Incorrecto</button>
+  <button onclick="resetJuego()">Reset</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let preguntas = [];
+    let index = 0;
+
+    async function cargarPreguntas() {
+      const res = await fetch('/preguntas-aleatorias');
+      preguntas = await res.json();
+      index = 0;
+      mostrarPregunta();
+    }
+
+    function mostrarPregunta() {
+      if (index >= preguntas.length) return alert("Fin de las preguntas");
+      const pregunta = preguntas[index];
+      document.getElementById('preguntas').innerText = `${pregunta.pregunta} (${pregunta.puntos} pts)`;
+      socket.emit('mostrar-pregunta', pregunta);
+    }
+
+    function asignarRespuesta(equipo, correcta) {
+      const actual = preguntas[index];
+      if (!actual) return;
+
+      if (correcta) {
+        socket.emit('respuesta', { equipo, correcta: true, puntos: actual.puntos });
+        socket.emit('actualizar-puntaje', { equipo, puntos: actual.puntos });
+        index++;
+        mostrarPregunta();
+      } else {
+        socket.emit('respuesta', { equipo, correcta: false });
+        if (equipo === 'equipo1') {
+          // Darle oportunidad al equipo 2
+        } else {
+          // Ningún equipo acertó
+          index++;
+          mostrarPregunta();
+        }
+      }
+    }
+
+    function resetJuego() {
+      socket.emit('reset');
+      location.reload();
+    }
+  </script>
+</body>
+</html>

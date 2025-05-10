@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Agregar Pregunta</title>
+</head>
+<body>
+  <h2>Agregar nueva pregunta</h2>
+  <form id="formulario">
+    <input type="text" name="pregunta" placeholder="Pregunta" required><br>
+    <input type="text" name="respuesta" placeholder="Respuesta" required><br>
+    <input type="number" name="puntos" placeholder="Puntos" required><br>
+    <input type="text" name="area" placeholder="Área (Matemáticas, Física...)" required><br>
+    <select name="dificultad" required>
+      <option value="">Dificultad</option>
+      <option value="facil">Fácil</option>
+      <option value="media">Media</option>
+      <option value="dificil">Difícil</option>
+    </select><br>
+    <input type="number" name="tiempo" placeholder="Tiempo (segundos)" required><br>
+    <button type="submit">Guardar Pregunta</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('formulario');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      const res = await fetch('/agregar-pregunta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      alert(await res.text());
+      form.reset();
+    });
+  </script>
+</body>
+</html>
